@@ -1,4 +1,3 @@
-const { trusted } = require("mongoose");
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const {
@@ -31,13 +30,9 @@ const registerUser = async (req, res) => {
 
     const hashedPass = await hashPass(password);
 
-    const avtarPath = req.file?.path;
-    const uploadAvtar = await cloudinaryUpload(avtarPath);
-
     const user = await User.create({
       username,
       email,
-      avtar: uploadAvtar.url,
       password: hashedPass,
     });
 
