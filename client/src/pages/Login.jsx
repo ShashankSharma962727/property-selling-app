@@ -1,8 +1,71 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../API/api";
+import { useAuth } from "../Context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const {login} = useAuth();
+
+  useEffect(() => {
+    if (!error) return;
+
+    const timer = setTimeout(() => {
+      setError("");
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [error]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (password.trim().length < 8) {
+      setError("Password must contain at least 8 characters.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await api.post("/api/v1/auth/login", {
+        email,
+        password,
+      });
+
+      if (!res.data?.success) {
+        throw new Error("Login response is missing the access token.");
+      }
+
+      const token = res.data?.accessToken;
+
+      if (!token) {
+        throw new Error("Access token not received.");
+      }
+
+      const userRes = await api.get("/api/v1/auth/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const userData = userRes.data?.user;
+
+      login(userData, token);
+
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      setError(
+        error.response?.data?.message || "Login failed. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -28,7 +91,7 @@ const Login = () => {
               login your account
             </p>
 
-            <form className="mt-7 space-y-5">
+            <form onSubmit={handleSubmit} className="mt-7 space-y-5">
               {/* Email */}
               <div>
                 <label
@@ -76,12 +139,22 @@ const Login = () => {
                   Use at least 8 characters.
                 </p>
               </div>
+
+              {error && (
+                <p
+                  role="alert"
+                  className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+                >
+                  {error}
+                </p>
+              )}
+
               {/* Submit */}
               <button
                 type="submit"
                 className="w-full rounded-lg bg-navy-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-navy-900 focus:outline-none focus:ring-2 focus:ring-navy-700 focus:ring-offset-2"
               >
-                login
+                {loading ? "Loading..." : "Sign in"}
               </button>
             </form>
 
@@ -91,7 +164,7 @@ const Login = () => {
                 to="/register"
                 className="font-medium text-navy-950 underline-offset-4 hover:underline"
               >
-                Sign in
+                Register
               </Link>
             </p>
           </div>

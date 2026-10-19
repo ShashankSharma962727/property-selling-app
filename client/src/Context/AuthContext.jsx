@@ -4,19 +4,23 @@ const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
   const [isLoggedin, setIsLoggedin] = useState(false);
-  const [token, setToken] = useState(false);
+  const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
 
-  const values = {
+  const login = (userData, accessToken) => {
+    setUser(userData);
+    setToken(accessToken);
+    setIsLoggedin(true);
+  }
+
+  const value = {
     user,
-    setUser,
     token,
-    setToken,
     isLoggedin,
-    setIsLoggedin,
+    login,
   };
 
-  return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

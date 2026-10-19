@@ -51,8 +51,6 @@ const Register = () => {
         });
       }
     } catch (error) {
-      console.log("Backend error:", error.response?.data?.message);
-
       setError(
         error.response?.data?.message ||
           error.message ||
