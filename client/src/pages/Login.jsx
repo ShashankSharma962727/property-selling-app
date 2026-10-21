@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../API/api";
 import { useAuth } from "../Context/AuthContext";
 
@@ -9,6 +9,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const {login} = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!error) return;
@@ -58,6 +59,7 @@ const Login = () => {
 
       setEmail("");
       setPassword("");
+      navigate("/");
     } catch (error) {
       setError(
         error.response?.data?.message || "Login failed. Please try again.",

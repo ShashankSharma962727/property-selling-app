@@ -12,6 +12,7 @@ import MyListings from "./pages/MyListings";
 import AddProperty from "./pages/AddProperty";
 import EditProperty from "./pages/EditProperty";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/protectedRoute/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -26,12 +27,17 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <DashboardLayout />,
+    element: <ProtectedRoute />,
     children: [
-      { path: "/dashboard", element: <Dashboard /> },
-      { path: "/dashboard/listings", element: <MyListings /> },
-      { path: "/dashboard/properties/new", element: <AddProperty /> },
-      { path: "/dashboard/properties/:id/edit", element: <EditProperty /> },
+      {
+        element: <DashboardLayout />,
+        children: [
+          { path: "/dashboard", element: <Dashboard /> },
+          { path: "/dashboard/listings", element: <MyListings /> },
+          { path: "/dashboard/properties/new", element: <AddProperty /> },
+          { path: "/dashboard/properties/:id/edit", element: <EditProperty /> },
+        ],
+      },
     ],
   },
   {
