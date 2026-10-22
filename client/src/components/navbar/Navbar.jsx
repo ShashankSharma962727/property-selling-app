@@ -78,10 +78,10 @@ const Navbar = () => {
 
           {isLoggedin && (
             <NavLink
-              to="/dashboard/properties/new"
+              to="/dashboard"
               className={navLinkClass}
             >
-              List a property
+              Dashboard
             </NavLink>
           )}
         </nav>
@@ -172,11 +172,11 @@ const Navbar = () => {
           {isLoggedin ? (
             <>
               <NavLink
-                to="/dashboard/properties/new"
+                to="/dashboard"
                 className={navLinkClass}
                 onClick={closeMenu}
               >
-                List a property
+                Dashboard
               </NavLink>
 
               <button

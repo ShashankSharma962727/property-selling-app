@@ -36,6 +36,13 @@ const listProperty = async (req, res) => {
     const imagePath = req.file?.path;
     const uploadImage = await cloudinaryUpload(imagePath);
 
+    if (!uploadImage) {
+      return res.status(500).json({
+        success: false,
+        message: "Cloudinary image upload failed",
+      });
+    }
+
     const property = await propertyModel.create({
       title,
       description,
@@ -48,7 +55,7 @@ const listProperty = async (req, res) => {
       bedrooms,
       area,
       areaUnit,
-      image: uploadImage.url,
+      image: uploadImage?.url,
     });
 
     return res.status(201).json({

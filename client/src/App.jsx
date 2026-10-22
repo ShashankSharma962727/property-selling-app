@@ -23,7 +23,6 @@ const router = createBrowserRouter([
       { path: "/properties/:id", element: <PropertyDetails /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
-      { path: "/profile", element: <Profile /> },
     ],
   },
   {
@@ -36,6 +35,7 @@ const router = createBrowserRouter([
           { path: "/dashboard/listings", element: <MyListings /> },
           { path: "/dashboard/properties/new", element: <AddProperty /> },
           { path: "/dashboard/properties/:id/edit", element: <EditProperty /> },
+          { path: "/dashboard/profile", element: <Profile /> },
         ],
       },
     ],

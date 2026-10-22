@@ -1,3 +1,4 @@
+
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 
@@ -8,18 +9,23 @@ cloudinary.config({
 });
 
 const cloudinaryUpload = async (filepath) => {
-  try {
-    if (!filepath) return null;
+  if (!filepath) {
+    throw new Error("Image file path is missing. Check req.file");
+  }
 
-    const res = await cloudinary.uploader.upload(filepath, {
-      resource_type: "auto",
+  try {
+    const result = await cloudinary.uploader.upload(filepath, {
+      resource_type: "image",
     });
 
-    fs.unlinkSync(filepath);
-    return res;
+    return result;
   } catch (error) {
-    fs.unlinkSync(filepath);
-    return null;
+    console.error("Cloudinary upload error:", error);
+    throw error;
+  } finally {
+    if (filepath && fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+    }
   }
 };
 

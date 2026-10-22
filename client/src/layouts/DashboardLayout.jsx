@@ -13,7 +13,7 @@ const DashboardLayout = () => {
   return (
     <div className="flex min-h-screen flex-col bg-cream-50">
       <Navbar />
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col lg:flex-row">
+      <div className="flex w-full max-w-6xl flex-1 flex-col lg:flex-row">
         <aside className="border-b border-cream-200 bg-navy-950 lg:w-60 lg:border-r lg:border-b-0 lg:border-cream-200">
           <p className="px-4 pt-5 pb-2 text-[0.65rem] tracking-[0.2em] text-amber-500 uppercase">
             Dashboard
@@ -31,7 +31,7 @@ const DashboardLayout = () => {
             <NavLink to="/dashboard/properties/new" className={sidebarLinkClass}>
               Add property
             </NavLink>
-            <NavLink to="/profile" className={sidebarLinkClass}>
+            <NavLink to="/dashboard/profile" className={sidebarLinkClass}>
               Profile
             </NavLink>
           </nav>
