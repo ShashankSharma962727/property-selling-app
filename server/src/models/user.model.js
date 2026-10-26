@@ -19,26 +19,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    verifyOtp: {
+    locstion: {
       type: String,
       default: "",
-    },
-    verifyOtpExpireAt: {
-      type: Number,
-      default: 0,
-    },
-    isVerify: {
-      type: Boolean,
-      default: false,
-    },
-    resetOtp: {
-      type: String,
-      default: "",
-    },
-    resetOtpExpireAt: {
-      type: Number,
-      default: 0,
-    },
+    }
   },
   {
     timestamps: true,
