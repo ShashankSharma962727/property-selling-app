@@ -7,6 +7,7 @@ const {
 const hashPass = require("../utils/hashPass");
 const cloudinaryUpload = require("../utils/cloudinary");
 const jwt = require("jsonwebtoken");
+const transporter = require("../utils/nodemailer");
 
 const registerUser = async (req, res) => {
   try {
@@ -215,10 +216,111 @@ const logout = async (req, res) => {
   }
 };
 
+const sendVerifyOtp = async (req, res) => {
+  try {
+    const { userid } = req.user;
+
+    const user = await User.findById(userid);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "User already verified!",
+      });
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+    user.verifyOtp = otp;
+    user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
+
+    await user.save();
+
+    await transporter.sendMail({
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: "Mail verification OTP.",
+      text: `Hello ${user.email} your Email verification otp is ${otp}, Thank you!`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP send Successfully!",
+    });
+  } catch (error) {
+    console.log("Send Verify OTP Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+    });
+  }
+};
+const verifyOtp = async (req, res) => {
+  try {
+    const {userid} = req.user;
+    const {otp} = req.body;
+
+    const user = await User.findById(userid);
+
+    if(!user){
+      return res.status(404).json({
+        success: false,
+        message: "User not found!"
+      })
+    }
+
+    if(user.verifyOtp == "" || user.verifyOtp !== otp){
+      return res.status(400).json({
+        success: false,
+        message: "Invalid otp!"
+      })
+    }
+
+    if(user.verifyOtpExpireAt < Date.now()){
+      return res.status(400).json({
+        success: false,
+        message: "Expire Otp!"
+      })
+    }
+
+    user.isVerified = true;
+    user.verifyOtp = "";
+    user.verifyOtpExpireAt = 0;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Email verification successfull!"
+    })
+  } catch (error) {
+    console.log("Verify email Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+    });
+  }
+};
+const sendResetOtp = async (req, res) => {};
+const resetOtp = async (req, res) => {};
+
 module.exports = {
   registerUser,
   loginUser,
   getProfile,
   genrateNewAccessToken,
   logout,
+  sendVerifyOtp,
+  verifyOtp,
+  sendResetOtp,
+  resetOtp,
 };
