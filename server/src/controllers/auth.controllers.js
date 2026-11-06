@@ -125,6 +125,13 @@ const getProfile = async (req, res) => {
 
     const user = await User.findById(userid).select("-password");
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       user,
@@ -265,30 +272,30 @@ const sendVerifyOtp = async (req, res) => {
 };
 const verifyOtp = async (req, res) => {
   try {
-    const {userid} = req.user;
-    const {otp} = req.body;
+    const { userid } = req.user;
+    const { otp } = req.body;
 
     const user = await User.findById(userid);
 
-    if(!user){
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found!"
-      })
+        message: "User not found!",
+      });
     }
 
-    if(user.verifyOtp == "" || user.verifyOtp !== otp){
+    if (user.verifyOtp == "" || user.verifyOtp !== otp) {
       return res.status(400).json({
         success: false,
-        message: "Invalid otp!"
-      })
+        message: "Invalid otp!",
+      });
     }
 
-    if(user.verifyOtpExpireAt < Date.now()){
+    if (user.verifyOtpExpireAt < Date.now()) {
       return res.status(400).json({
         success: false,
-        message: "Expire Otp!"
-      })
+        message: "Expire Otp!",
+      });
     }
 
     user.isVerified = true;
@@ -299,8 +306,8 @@ const verifyOtp = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Email verification successfull!"
-    })
+      message: "Email verification successfull!",
+    });
   } catch (error) {
     console.log("Verify email Error:", error);
 
@@ -310,8 +317,102 @@ const verifyOtp = async (req, res) => {
     });
   }
 };
-const sendResetOtp = async (req, res) => {};
-const resetOtp = async (req, res) => {};
+const sendResetOtp = async (req, res) => {
+  try {
+    const { userid } = req.user;
+
+    const user = await User.findById(userid);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+    user.resetOtp = otp;
+    user.resetOtpExipreAt = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    await transporter.sendMail({
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: "Reset Password OTP.",
+      text: `Hello ${user.email} your password reser otp is ${otp}, Thank you!`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP send successfully!",
+    });
+  } catch (error) {
+    console.log("Send Reset OTP Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+    });
+  }
+};
+const resetOtp = async (req, res) => {
+  try {
+    const { userid } = req.user;
+    const { otp, newPassword } = req.body;
+
+    const user = await User.findById(userid);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    if (user.resetOtp == "" || user.resetOtp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP!",
+      });
+    }
+
+    if (user.resetOtpExipreAt < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP Expired!",
+      });
+    }
+
+    if (!newPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Enter new password!",
+      });
+    }
+
+    const hashNewPass = await hashPass(newPassword);
+
+    user.password = hashNewPass;
+    user.resetOtp = "";
+    user.resetOtpExipreAt = 0;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully!",
+    });
+  } catch (error) {
+    console.log("Reset password Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+    });
+  }
+};
 
 module.exports = {
   registerUser,
