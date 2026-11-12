@@ -13,6 +13,7 @@ import AddProperty from "./pages/AddProperty";
 import EditProperty from "./pages/EditProperty";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/protectedRoute/ProtectedRoute";
+import OTP from "./pages/OTP";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
           { path: "/dashboard/properties/new", element: <AddProperty /> },
           { path: "/dashboard/properties/:id/edit", element: <EditProperty /> },
           { path: "/dashboard/profile", element: <Profile /> },
+          { path: "/dashboard/profile/verify-account", element: <OTP /> },
         ],
       },
     ],

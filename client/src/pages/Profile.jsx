@@ -1,25 +1,15 @@
 import { useState } from "react";
 import { useAuth } from "../Context/AuthContext";
+import api from "../API/api";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const {user} = useAuth();
+  const { user, token } = useAuth();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   setProfile((prev) => ({
-  //     ...prev,
-  //     [name]: value,
-  //   }));
-  // };
-
-  // const handleSave = (e) => {
-  //   e.preventDefault();
-  //   setIsEditing(false);
-
-  //   // TODO: Save profile using /auth/profile API
-  // };
+  const navigate = useNavigate();
 
   const initials = user.username
     .split(" ")
@@ -43,6 +33,31 @@ const Profile = () => {
       </p>
     </div>
   );
+
+  const handleverification = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await api.post(
+        "/api/v1/auth/send-verify-otp",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (res.data.success) {
+        navigate("/dashboard/profile/verify-account");
+      }
+    } catch (error) {
+      setError(error.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-full bg-cream-50 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -75,8 +90,8 @@ const Profile = () => {
         </div>
 
         {/* Profile overview */}
-        <section className="mb-6 overflow-hidden pt-20 rounded-sm border border-cream-200 bg-white">
 
+        <section className="mb-6 overflow-hidden pt-20 rounded-sm border border-cream-200 bg-white">
           <div className="px-5 pb-5 sm:px-7 sm:pb-7">
             <div className="-mt-10 flex flex-col gap-4 sm:-mt-12 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
@@ -96,14 +111,86 @@ const Profile = () => {
 
               <span className="mb-1 inline-flex w-fit items-center gap-2 rounded-sm border border-cream-200 bg-cream-50 px-3 py-1.5 text-xs font-medium text-navy-950/75">
                 <span className="h-2 w-2 rounded-full bg-amber-500" />
-                
+                User Profile
               </span>
             </div>
 
             <div className="mt-6 border-t border-cream-200 pt-5">
-              <p className="text-xs leading-5 text-navy-950/55">
-                Your account information and personal details, all in one place.
-              </p>
+              {user.isVerified ? (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-green-100">
+                      <svg
+                        className="h-6 w-6 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-green-700">
+                        Verified Account
+                      </p>
+                      <p className="text-xs text-green-600">
+                        Your account has been successfully verified.
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="inline-flex w-fit items-center gap-2 rounded-sm border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
+                    <svg
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 1l2.5 2 3.2.3.7 3.1 2 2.6-2 2.6-.7 3.1-3.2.3L10 17l-2.5-2-3.2-.3-.7-3.1-2-2.6 2-2.6.7-3.1 3.2-.3L10 1zm4 6.5a1 1 0 00-1.5-1.3L9 10l-1.5-1.5A1 1 0 006 10l2.2 2.2a1 1 0 001.4 0L14 7.5z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Verified
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-semibold text-red-600">Not Verified</p>
+                    <p className="text-xs text-navy-950/60">
+                      Your account verification is pending.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleverification}
+                    className="inline-flex w-fit items-center gap-2 rounded-sm bg-amber-500 px-5 py-2.5 text-sm font-semibold text-navy-950 transition hover:bg-amber-600"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-7a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2zm10-11V7a4 4 0 00-8 0v2h8z"
+                      />
+                    </svg>
+                    {loading ? "Sending otp..." : "Verify Account"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </section>
