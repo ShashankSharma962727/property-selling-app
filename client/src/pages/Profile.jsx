@@ -34,6 +34,10 @@ const Profile = () => {
     </div>
   );
 
+  const handleChange = async () => {
+    
+  }
+
   const handleverification = async () => {
     try {
       setLoading(true);
