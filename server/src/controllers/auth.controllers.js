@@ -150,10 +150,11 @@ const genrateNewAccessToken = async (req, res) => {
   try {
     const refreshToken = req.cookies["refresh-token"];
 
-    if (!refreshToken)
+    if (!refreshToken) {
       return res
         .status(404)
         .json({ success: false, message: "Refresh token not found" });
+    }
 
     const decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
@@ -180,6 +181,8 @@ const genrateNewAccessToken = async (req, res) => {
 
     res.cookie("refresh-token", newRefreshToken, {
       httpOnly: true,
+      secure: true,
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
 
@@ -203,6 +206,42 @@ const genrateNewAccessToken = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "internal server error",
+    });
+  }
+};
+
+const editUser = async (req, res) => {
+  try {
+    const { userid } = req.user;
+    const { username, location } = req.body;
+
+    const user = await User.findById(userid);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    if (username !== undefined) {
+      user.username = username;
+    }
+
+    if (location !== undefined) {
+      user.location = location;
+    }
+
+    await user.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "User Update Successfully!",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -272,6 +311,7 @@ const sendVerifyOtp = async (req, res) => {
     });
   }
 };
+
 const verifyOtp = async (req, res) => {
   try {
     const { userid } = req.user;
@@ -319,6 +359,7 @@ const verifyOtp = async (req, res) => {
     });
   }
 };
+
 const sendResetOtp = async (req, res) => {
   try {
     const { userid } = req.user;
@@ -359,6 +400,7 @@ const sendResetOtp = async (req, res) => {
     });
   }
 };
+
 const resetOtp = async (req, res) => {
   try {
     const { userid } = req.user;
@@ -426,4 +468,5 @@ module.exports = {
   verifyOtp,
   sendResetOtp,
   resetOtp,
+  editUser,
 };

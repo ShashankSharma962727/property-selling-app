@@ -9,6 +9,7 @@ const {
   verifyOtp,
   sendResetOtp,
   resetOtp,
+  editUser
 } = require("../controllers/auth.controllers");
 const upload = require("../middlewares/multer");
 const checkAccessToken = require("../middlewares/checkAccessToken");
@@ -23,5 +24,6 @@ authRouter.post("/send-verify-otp", checkAccessToken, sendVerifyOtp);
 authRouter.post("/verify-email", checkAccessToken, verifyOtp);
 authRouter.post("/send-reset-otp", checkAccessToken, sendResetOtp);
 authRouter.post("/reset-pass", checkAccessToken, resetOtp);
+authRouter.put("/edit-user", checkAccessToken, editUser);
 
 module.exports = authRouter;

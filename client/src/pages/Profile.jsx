@@ -8,6 +8,10 @@ const Profile = () => {
   const { user, token } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    location: "",
+  });
 
   const navigate = useNavigate();
 
@@ -34,9 +38,39 @@ const Profile = () => {
     </div>
   );
 
-  const handleChange = async () => {
-    
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    console.log(formData);
+    try {
+      setError("");
+      const res = await api.put(
+        "/api/v1/auth/edit-user",
+        {
+          username: formData.username,
+          location: formData.location,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log(res);
+      setIsEditing(false);
+    } catch (error) {
+      setError(error.response?.data?.message);
+    }
+  };
 
   const handleverification = async () => {
     try {
@@ -216,7 +250,7 @@ const Profile = () => {
             </span>
           </div>
 
-          <form>
+          <form onSubmit={handleEdit}>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
                 <label className={labelClass} htmlFor="fullName">
@@ -225,7 +259,8 @@ const Profile = () => {
                 {isEditing ? (
                   <input
                     id="fullName"
-                    name="fullName"
+                    name="username"
+                    value={formData.username}
                     onChange={handleChange}
                     className={inputClass}
                     placeholder="Enter your full name"
@@ -240,37 +275,7 @@ const Profile = () => {
                 <label className={labelClass} htmlFor="email">
                   Email address
                 </label>
-                {isEditing ? (
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    onChange={handleChange}
-                    className={inputClass}
-                    placeholder="Enter your email"
-                    required
-                  />
-                ) : (
-                  <Detail label="" value={user.email} />
-                )}
-              </div>
-
-              <div>
-                <label className={labelClass} htmlFor="phone">
-                  Phone number
-                </label>
-                {isEditing ? (
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    onChange={handleChange}
-                    className={inputClass}
-                    placeholder="Enter your phone number"
-                  />
-                ) : (
-                  <Detail label="" value={user.email} />
-                )}
+                <Detail label="" value={user.email} />
               </div>
 
               <div>
@@ -281,12 +286,13 @@ const Profile = () => {
                   <input
                     id="location"
                     name="location"
+                    value={formData.location}
                     onChange={handleChange}
                     className={inputClass}
                     placeholder="City, State"
                   />
                 ) : (
-                  <Detail label="" value={user.email} />
+                  <Detail label="" value={user.location} />
                 )}
               </div>
             </div>
@@ -308,6 +314,15 @@ const Profile = () => {
                   Save changes
                 </button>
               </div>
+            )}
+
+            {error && (
+              <p
+                role="alert"
+                className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+              >
+                {error}
+              </p>
             )}
           </form>
         </section>
