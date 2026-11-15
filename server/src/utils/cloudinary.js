@@ -10,7 +10,7 @@ cloudinary.config({
 
 const cloudinaryUpload = async (filepath) => {
   if (!filepath) {
-    throw new Error("Image file path is missing. Check req.file");
+    throw new Error("Image file path is missing");
   }
 
   try {
@@ -19,12 +19,18 @@ const cloudinaryUpload = async (filepath) => {
     });
 
     return result;
+
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     throw error;
+
   } finally {
-    if (filepath && fs.existsSync(filepath)) {
-      fs.unlinkSync(filepath);
+    try {
+      if (fs.existsSync(filepath)) {
+        fs.unlinkSync(filepath);
+      }
+    } catch (err) {
+      console.error("File cleanup failed:", err);
     }
   }
 };
